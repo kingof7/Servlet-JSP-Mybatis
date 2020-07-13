@@ -1,0 +1,42 @@
+#power {
+   border: 1px black solid;
+   width: 600px;
+   margin: 200px auto;
+   oveflow: hidden;      
+}
+
+
+#power .bottom {
+   
+   text-align:center;
+}
+
+#power > div {
+   border: solid 1px black;   
+   vertical-align: middle;
+   overflow: hidden;   
+}
+
+#power .six {	
+   border-right: solid 2px;
+   float:left;
+   width: 100px; height:30px;
+   padding-bottom:2px;
+   text-align:center;
+   height: 30px;
+}
+#power input, #power textarea {
+   margin:5px;
+}
+
+#power .title {
+   text-align:right;
+   border: 0px;
+}
+a { text-decoration:none }
+
+#power > form > div {
+   border: solid 1px black;   
+   vertical-align: middle;
+   overflow: hidden;   
+}
