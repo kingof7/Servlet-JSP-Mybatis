@@ -7,6 +7,26 @@
 
 <!-- namespace는 주로 경로를 쓴다 -->
 <mapper namespace="com.java.member.model.mapper.MemberMapper.xml">
+
+	<!-- dto와 컬럼이 안맞을 경우 이렇게 따로 셋팅 -->
+	<!-- column는 db의 컬럼, property는 MemberDto의 필드 -->
+	<resultMap type = "com.java.member.model.MemberDto" id ="member_dto">
+		<result column="num" property="num"/>
+		<result column="id" property="id"/>
+		<result column="password" property="password"/>
+		<result column="name" property="name"/>
+		<result column="jumin1" property="jumin1"/>
+		<result column="jumin2" property="jumin2"/>
+		<result column="email" property="email"/>
+		<result column="zipcode" property="zipcode"/>
+		<result column="address" property="address"/>
+		<result column="job" property="job"/>
+		<result column="mailing" property="mailing"/>
+		<result column="interest" property="interest"/>
+		<result column="member_level" property="memberLevel"/>
+		<result column="register_date" property="registerDate"/>		 
+	</resultMap>
+		
 	<insert id="member_insert" parameterType="com.java.member.model.MemberDto">
 		insert into member values(
 		member_num_seq.nextval, 
@@ -25,4 +45,23 @@
 			 sysdate
 			)
 	</insert>
+	
+	<select id="id_check" parameterType="String" resultType="String">
+		select id from member where id = #{id}
+	</select>
+	
+	<select id="member_zipcode" parameterType="String" resultType="com.java.member.model.ZipcodeDto">
+		select * from zipcode
+		where dong = #{checkDong}
+	</select>
+	
+	<select id="member_login" parameterType="java.util.Map" resultType="String">
+		select member_level from member where id = #{id} and password = #{password}
+	</select>
+	
+	<!-- 컬럼명 안맞을경우 resultMap="id명" -->
+	<select id="member_select" parameterType="String" resultMap="member_dto">
+		select * from member where id = #{id}
+	</select>
+	
 </mapper>

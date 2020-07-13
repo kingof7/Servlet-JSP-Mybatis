@@ -45,7 +45,7 @@
 		<div class="label mar">
 			<label>우편번호</label>
 			<input type="text" name="zipcode"/>
-			<button type="button" name="idChk" onclick="zipCode('${root}')">우편번호검색</button>
+			<button type="button" name="dong" onclick="zipCode('${root}')">우편번호검색</button>
 		</div>
 		<div class="label mar">
 			<label>주소</label>
