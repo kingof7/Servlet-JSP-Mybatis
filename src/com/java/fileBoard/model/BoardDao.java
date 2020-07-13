@@ -7,10 +7,16 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
 
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
+
 import com.java.database.ConnectionProvider;
 import com.java.database.JdbcUtil;
+import com.java.myBatis.SqlManager;
 
 public class BoardDao {
+	private static SqlSessionFactory sqlSessionFactory = SqlManager.getInstance();
+	private SqlSession session;
 	//싱글톤 패턴
 	private static BoardDao instance = new BoardDao();
 	
@@ -19,85 +25,26 @@ public class BoardDao {
 	}
 	
 	public int insert(BoardDto boardDto) {
-		Connection conn = null;
-		PreparedStatement pstmt = null;
+	
 		int value = 0;
 		
-		writeNumber(boardDto, conn);
+		writeNumber(boardDto);	
 		
-		String sql = null;
-		
-		try {
-			
-			if(boardDto.getFileSize() == 0) {
-				sql = "insert into board(board_number, writer, subject, email, content, password, write_date, read_count,"
-						+ "group_number, sequence_number, sequence_level) " 
-						+ "values(board_board_number_seq.nextval, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-				conn = ConnectionProvider.getConnection();
-				pstmt = conn.prepareStatement(sql);
+		try {						
+			session = sqlSessionFactory.openSession();
+			value = session.insert("board_insert", boardDto);
+			session.commit();
 				
-				pstmt.setString(1, boardDto.getWriter());
-				pstmt.setString(2, boardDto.getSubject());
-				pstmt.setString(3, boardDto.getEmail());
-				pstmt.setString(4, boardDto.getContent().replace("\r\n", "<br/>"));
-				pstmt.setString(5, boardDto.getPassword());
-				
-				//Date -> time -> Timestamp 변환
-				/*
-				 * Date date = boardDto.getWriteDate(); long time = date.getTime(); Timestamp ts
-				 * = new Timestamp(time); pstmt.setTimestamp(5, ts);
-				 */
-				
-				pstmt.setTimestamp(6, new Timestamp(boardDto.getWriteDate().getTime()));
-				pstmt.setInt(7, boardDto.getReadCount());
-				pstmt.setInt(8,  boardDto.getGroupNumber());
-				pstmt.setInt(9,  boardDto.getSequenceNumber());
-				pstmt.setInt(10, boardDto.getSequenceLevel());
-				
-				value = pstmt.executeUpdate();
-			}else {
-				sql = "insert into board(board_number, writer, subject, email, content, password, write_date, read_count,"
-						+ "group_number, sequence_number, sequence_level, file_name, path, file_size) " 
-						+ "values(board_board_number_seq.nextval, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-				
-				conn = ConnectionProvider.getConnection();
-				pstmt = conn.prepareStatement(sql);
-				
-				pstmt.setString(1, boardDto.getWriter());
-				pstmt.setString(2, boardDto.getSubject());
-				pstmt.setString(3, boardDto.getEmail());
-				pstmt.setString(4, boardDto.getContent().replace("\r\n", "<br/>"));
-				pstmt.setString(5, boardDto.getPassword());
-				
-				//Date -> time -> Timestamp 변환
-				/*
-				 * Date date = boardDto.getWriteDate(); long time = date.getTime(); Timestamp ts
-				 * = new Timestamp(time); pstmt.setTimestamp(5, ts);
-				 */
-				
-				pstmt.setTimestamp(6, new Timestamp(boardDto.getWriteDate().getTime()));
-				pstmt.setInt(7, boardDto.getReadCount());
-				pstmt.setInt(8,  boardDto.getGroupNumber());
-				pstmt.setInt(9,  boardDto.getSequenceNumber());
-				pstmt.setInt(10, boardDto.getSequenceLevel());
-				pstmt.setString(11, boardDto.getFileName());
-				pstmt.setString(12, boardDto.getPath());
-				pstmt.setLong(13, boardDto.getFileSize());
-				
-				value = pstmt.executeUpdate();
-			}
-			
 		}catch(Exception e) {
 			e.printStackTrace();
 		}finally {
-			JdbcUtil.close(pstmt);
-			JdbcUtil.close(conn);
+			session.close();
 		}
 		
 		return value;		
 	}
 	
-	public void writeNumber(BoardDto boardDto, Connection conn) {
+	public void writeNumber(BoardDto boardDto) {
 		// 그룹번호, 글순서, 글레벨
 		
 		int boardNumber = boardDto.getBoardNumber(); // 0	
@@ -105,48 +52,41 @@ public class BoardDao {
 		int sequenceNumber = boardDto.getSequenceNumber(); // 0
 		int sequenceLevel = boardDto.getSequenceLevel(); // 0
 		String sql = null;
-		PreparedStatement pstmt = null;
-		ResultSet rs = null;
 		
 		try {
 			//루트글
 			if(boardNumber == 0) {	// groupNumber, 0, 0 // ROOT : 그룹번호
-				sql = "select max(group_number) from board";
-				conn = ConnectionProvider.getConnection();
-				pstmt = conn.prepareStatement(sql);
-				rs = pstmt.executeQuery();
+			
+				session = sqlSessionFactory.openSession();
 				
-				if(rs.next()) {
-					int max = rs.getInt(1);// "max(group_number)" : 부모 게시물갯수
-					boardDto.setGroupNumber(max+1); // 최고 그룹넘버 최대값에 1을 더함
-				}
+				//rs.next가 없으니 max에 null값을 가져올 수 있기 때문에 , 쿼리에 NVL함수 써야됨
+				int max = session.selectOne("board_group_number_max");// 넘어가는 값이 없음
 				
-			}
+				if(max != 0) boardDto.setGroupNumber(max+1); // 최고 그룹넘버 최대값에 1을 더함				
+			
 			//자식글
 			else {	// 답글 : 글순서, 글레벨
 				
 				// 시퀀스 넘버가 0보다큰(=이전에 작성한글들) 것들 1 씩 모두 증가
-				sql = "update board set sequence_number = sequence_number + 1 " + "where group_number=? and sequence_number > ?";
-				
-				conn = ConnectionProvider.getConnection();
-				pstmt = conn.prepareStatement(sql);
-				pstmt.setInt(1, groupNumber);
-				pstmt.setInt(2, sequenceNumber);
-				pstmt.executeUpdate();
-								
-				//본인 것 1증가
-				sequenceNumber = sequenceNumber + 1;
-				sequenceLevel = sequenceLevel + 1;
-				
-				boardDto.setSequenceNumber(sequenceNumber);
-				boardDto.setSequenceLevel(sequenceLevel);
+				/*
+				 * sql = "update board set sequence_number = sequence_number + 1 " +
+				 * "where group_number=? and sequence_number > ?";
+				 * 
+				 * conn = ConnectionProvider.getConnection(); pstmt =
+				 * conn.prepareStatement(sql); pstmt.setInt(1, groupNumber); pstmt.setInt(2,
+				 * sequenceNumber); pstmt.executeUpdate();
+				 * 
+				 * //본인 것 1증가 sequenceNumber = sequenceNumber + 1; sequenceLevel = sequenceLevel
+				 * + 1;
+				 * 
+				 * boardDto.setSequenceNumber(sequenceNumber);
+				 * boardDto.setSequenceLevel(sequenceLevel);
+				 */
 			}
-		}catch (Exception e) {
+			}}catch (Exception e) {
 			e.printStackTrace();
 		}finally {
-			JdbcUtil.close(rs);
-			JdbcUtil.close(pstmt);
-			JdbcUtil.close(conn);			
+			session.close();			
 		}
 		
 	}
