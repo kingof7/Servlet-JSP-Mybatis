@@ -64,4 +64,20 @@
 		select * from member where id = #{id}
 	</select>
 	
+	<update id="member_update" parameterType="com.java.member.model.MemberDto">
+		update member set 
+		 password=#{password},
+		 email=#{email},
+		 zipcode=#{zipcode},
+		 address=#{address},
+		 job=#{job},
+		 mailing=#{mailing}, 
+		 interest=#{interest}
+		 where num = #{num}
+	</update>
+	
+	<delete id="member_delete" parameterType="java.util.Map">
+		delete from member where id=#{id} and password=#{password}
+	</delete>
+	
 </mapper>

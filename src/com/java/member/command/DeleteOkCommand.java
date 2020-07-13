@@ -19,6 +19,8 @@ public class DeleteOkCommand implements Command {
 		
 		logger.info(logMsg + check);
 		
+		request.setAttribute("check", check);
+		
 		return "/WEB-INF/views/member/deleteOk.jsp";
 	}
 
