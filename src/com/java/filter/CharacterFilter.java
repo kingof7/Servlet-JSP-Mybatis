@@ -19,4 +19,5 @@ public class CharacterFilter implements Filter{
 		chain.doFilter(request, response);
 	}
 	
+	
 }

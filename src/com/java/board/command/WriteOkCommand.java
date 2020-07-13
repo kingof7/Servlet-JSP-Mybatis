@@ -14,7 +14,7 @@ public class WriteOkCommand implements Command {
 	@Override
 	public String proRequest(HttpServletRequest request, HttpServletResponse response) throws Throwable {
 		
-		request.setCharacterEncoding("utf-8");
+		//request.setCharacterEncoding("utf-8");
 				
 		//write.jsp -> Dto에 담아주기 위해
 		

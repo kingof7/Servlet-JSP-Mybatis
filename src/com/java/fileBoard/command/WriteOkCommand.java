@@ -27,7 +27,7 @@ public class WriteOkCommand implements Command {
 	@Override
 	public String proRequest(HttpServletRequest request, HttpServletResponse response) throws Throwable {
 
-		request.setCharacterEncoding("utf-8");
+		//request.setCharacterEncoding("utf-8");
 
 		// request만으로 못받으니까 아래 걸 써줌
 		// DiskFileItemFactory factory = new DiskFileItemFactory(); //파일보관 객체
