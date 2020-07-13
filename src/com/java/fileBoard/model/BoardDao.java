@@ -6,7 +6,6 @@ import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 
 import com.java.database.ConnectionProvider;
 import com.java.database.JdbcUtil;
