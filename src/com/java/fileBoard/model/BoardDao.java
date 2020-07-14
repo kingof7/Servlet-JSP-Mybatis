@@ -30,10 +30,17 @@ public class BoardDao {
 		
 		writeNumber(boardDto);	
 		
-		try {						
-			session = sqlSessionFactory.openSession();
-			value = session.insert("board_insert", boardDto);
-			session.commit();
+		try {
+			
+			if(boardDto.getFileSize() == 0) {
+				session = sqlSessionFactory.openSession();
+				value = session.insert("board_insert", boardDto);
+				session.commit();
+			}else {
+				session = sqlSessionFactory.openSession();
+				value = session.insert("fileBoard_insert", boardDto);
+				session.commit();				
+			}
 				
 		}catch(Exception e) {
 			e.printStackTrace();
@@ -41,7 +48,8 @@ public class BoardDao {
 			session.close();
 		}
 		
-		return value;		
+		return value;				
+		
 	}
 	
 	public void writeNumber(BoardDto boardDto) {
@@ -62,10 +70,12 @@ public class BoardDao {
 				//rs.next가 없으니 max에 null값을 가져올 수 있기 때문에 , 쿼리에 NVL함수 써야됨
 				int max = session.selectOne("board_group_number_max");// 넘어가는 값이 없음
 				
-				if(max != 0) boardDto.setGroupNumber(max+1); // 최고 그룹넘버 최대값에 1을 더함				
+				if(max != 0) boardDto.setGroupNumber(max+1); // 최고 그룹넘버 최대값에 1을 더함
+				
+				session.commit();
 			
 			//자식글
-			else {	// 답글 : 글순서, 글레벨
+			}else {	// 답글 : 글순서, 글레벨
 				
 				// 시퀀스 넘버가 0보다큰(=이전에 작성한글들) 것들 1 씩 모두 증가
 				/*
@@ -83,7 +93,7 @@ public class BoardDao {
 				 * boardDto.setSequenceLevel(sequenceLevel);
 				 */
 			}
-			}}catch (Exception e) {
+			}catch (Exception e) {
 			e.printStackTrace();
 		}finally {
 			session.close();			
@@ -92,28 +102,19 @@ public class BoardDao {
 	}
 	
 	public int getCount() {
-		String sql = null;
-		Connection conn = null;
-		PreparedStatement pstmt = null;
-		ResultSet rs = null;		
+				
 		int value = 0;
 		
 		try {
-			sql = "select count(*) from board";
 			
-			conn = ConnectionProvider.getConnection();
-			pstmt = conn.prepareStatement(sql);
-			rs = pstmt.executeQuery();
-			
-			if(rs.next()) value = rs.getInt(1); // count(*)
-			
+			session = sqlSessionFactory.openSession();
+			value = session.selectOne("board_count");
+			session.commit();
 			
 		}catch(Exception e) {
 			e.printStackTrace();
 		}finally {
-			JdbcUtil.close(rs);
-			JdbcUtil.close(pstmt);
-			JdbcUtil.close(conn);
+			session.close();
 		}
 		
 		

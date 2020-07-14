@@ -40,6 +40,9 @@ public class WriteOkCommand implements Command {
 		BoardDto boardDto = new BoardDto();
 		HashMap<String, String> dataMap = new HashMap<String, String>();
 
+		int fileUp = 0;
+		String fileOn = null;
+		
 		while (iter.hasNext()) { // 11개
 			FileItem fileItem = iter.next();
 
@@ -84,6 +87,7 @@ public class WriteOkCommand implements Command {
 			} else {
 //	            String name = fileItem.getFieldName();
 //	            logger.info(logMsg + "binary " + name + "," + fileItem.getName() + "," + fileItem.getSize()); // 파일네임 체크
+				
 				if (fileItem.getFieldName().equals("file")) {
 					// 파일명 getName() , 파일사이즈 getSize(), 파일정보 getInputStream()
 					if (fileItem.getName() == null || fileItem.getName().equals(""))
@@ -98,8 +102,10 @@ public class WriteOkCommand implements Command {
 					// 실제 톰캣 서버 경로
 //	               String dir = request.getServletContext().getRealPath("\\pds\\");
 //	               logger.info(logMsg + dir);
-
-					File dir = new File("C:\\pds\\");
+					
+					fileOn = fileItem.getFieldName();
+					
+					File dir = new File("C:\\LJH\\mvc\\workspace\\MyBatisHomePage\\WebContent\\pds\\");
 					dir.mkdir();
 					File file = null;
 					if (dir.exists() && dir.isDirectory()) {
@@ -130,14 +136,14 @@ public class WriteOkCommand implements Command {
 					boardDto.setFileName(fileName);
 					boardDto.setFileSize(fileItem.getSize());
 					boardDto.setPath(file.getAbsolutePath());
-
+					fileUp = 1;
 				}
 
 				String name = fileItem.getFieldName();
 				logger.info(logMsg + "binary: " + name + "," + fileItem.getName() + "," + fileItem.getSize());
 			}
 		}
-
+		
 		boardDto.setDataMap(dataMap);
 		boardDto.setWriteDate(new Date());
 		logger.info(logMsg + boardDto.toString());

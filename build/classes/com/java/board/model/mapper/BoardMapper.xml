@@ -9,7 +9,7 @@
 		<result column="board_number" property="boardNumber"/>
 		<result column="writer" property="writer"/>
 		<result column="subject" property="subject"/>
-		<result column="email" property="subject"/>
+		<result column="email" property="email"/>
 		<result column="content" property="content"/>
 		<result column="password" property="password"/>
 		
@@ -19,8 +19,28 @@
 		<result column="sequence_number" property="sequenceNumber"/>
 		<result column="sequence_level" property="sequenceLevel"/>
 	</resultMap>
+	
+	<resultMap type="com.java.fileBoard.model.BoardDto" id="fileBoardDto">
+		<result column="board_number" property="boardNumber"/>
+		<result column="writer" property="writer"/>
+		<result column="subject" property="subject"/>
+		<result column="email" property="email"/>
+		<result column="content" property="content"/>
+		<result column="password" property="password"/>
+		
+		<result column="write_date" property="writeDate"/>
+		<result column="read_count" property="readCount"/>	
+		<result column="group_number" property="groupNumber"/>
+		<result column="sequence_number" property="sequenceNumber"/>
+		<result column="sequence_level" property="sequenceLevel"/>
+		
+		<result column="file_name" property="fileName"/>
+		<result column="path" property="path"/>
+		<result column="file_size" property="fileSize"/>
+	</resultMap>
 
-
+	<!-- Board -->
+	
 	<select id="board_group_number_max" resultType="int">
 		select nvl(max(group_number), 0) from board
 	</select>
@@ -78,4 +98,26 @@
 	<select id="board_read" parameterType="int" resultMap="boardDto">
 		select * from board where board_number = #{boardNumber}
 	</select>
+	
+	<delete id="board_delete" parameterType="com.java.board.model.BoardDto">
+		delete from board 
+		where board_number = #{boardNumber}
+		and password = #{password}
+	</delete>
+	
+	<update id="board_up" parameterType="com.java.board.model.BoardDto">
+		update board set subject = #{subject},
+		content = #{content}
+		where board_number = #{boardNumber}
+	</update>
+	
+	<update id="board_child" parameterType="com.java.board.model.BoardDto">
+		<![CDATA[
+		update board set sequence_number = sequence_number + 1
+		where group_number = #{groupNumber}
+		and sequence_number > #{sequenceNumber}
+		]]>
+	</update>
+	
+	
 </mapper>

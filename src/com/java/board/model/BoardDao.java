@@ -27,9 +27,8 @@ public class BoardDao {
 	
 	public int insert(BoardDto boardDto) {
 
-		int value = 0;
-		
-		writeNumber(boardDto);	
+		int value = 0;				
+		writeNumber(boardDto);
 		
 		try {						
 			session = sqlSessionFactory.openSession();
@@ -52,22 +51,29 @@ public class BoardDao {
 				int groupNumber = boardDto.getGroupNumber(); // 1
 				int sequenceNumber = boardDto.getSequenceNumber(); // 0
 				int sequenceLevel = boardDto.getSequenceLevel(); // 0
-				String sql = null;
 				
 				try {
 					//루트글
 					if(boardNumber == 0) {	// groupNumber, 0, 0 // ROOT : 그룹번호
-					
+
 						session = sqlSessionFactory.openSession();
-						
+
 						//rs.next가 없으니 max에 null값을 가져올 수 있기 때문에 , 쿼리에 NVL함수 써야됨
 						int max = session.selectOne("board_group_number_max");// 넘어가는 값이 없음
-						
-						if(max != 0) boardDto.setGroupNumber(max+1); // 최고 그룹넘버 최대값에 1을 더함				
-					
-					//자식글
-					else {	// 답글 : 글순서, 글레벨
-						
+
+						if(max != 0) boardDto.setGroupNumber(max+1); // 최고 그룹넘버 최대값에 1을 더함
+
+						//자식글
+					} else {	// 답글 : 글순서, 글레벨
+
+						session = sqlSessionFactory.openSession();
+						session.update("board_child", boardDto);
+						session.commit();
+						sequenceNumber += 1;
+						sequenceLevel += 1;
+						boardDto.setSequenceNumber(sequenceNumber);
+						boardDto.setSequenceLevel(sequenceLevel);
+
 						// 시퀀스 넘버가 0보다큰(=이전에 작성한글들) 것들 1 씩 모두 증가
 						/*
 						 * sql = "update board set sequence_number = sequence_number + 1 " +
@@ -84,16 +90,16 @@ public class BoardDao {
 						 * boardDto.setSequenceLevel(sequenceLevel);
 						 */
 					}
-					}}catch (Exception e) {
+				} catch (Exception e) {
 					e.printStackTrace();
-				}finally {
+				} finally {
 					session.close();			
-				}
+				}				
 				
 		
 	}
 	
-	
+	// 전체 게시물 목록 뿌려주기
 	public int getCount() {
 			
 		int value = 0;
@@ -143,6 +149,7 @@ public class BoardDao {
 		try {
 			
 			session=sqlSessionFactory.openSession();
+			//조회수 카운트 올리기
 			session.update("board_update", boardNumber);
 			boardDto = session.selectOne("board_read", boardNumber);
 			session.commit();
@@ -157,55 +164,37 @@ public class BoardDao {
 		return boardDto;		
 	}
 	
-	public int delete(int boardNumber, String password) {
-		Connection conn = null;
-		PreparedStatement pstmt = null;				
-		int value = 0;
-		
-		
+	public int delete(BoardDto boardDto) {
+					
+		int value = 0;		
+		System.out.println(boardDto.toString());			
 		try {
-			String sql = "delete from board where board_number=? and password=?";
-			conn = ConnectionProvider.getConnection();
-			pstmt = conn.prepareStatement(sql);
-			pstmt.setInt(1, boardNumber);
-			pstmt.setString(2, password);
-			
-			value=pstmt.executeUpdate();
-			
+			session = sqlSessionFactory.openSession();
+			value = session.delete("board_delete", boardDto);			
+			session.commit();
 		}catch(Exception e) {
 			e.printStackTrace();
 		}finally {
-			
-			JdbcUtil.close(pstmt);
-			JdbcUtil.close(conn);			
+			session.close();			
 		}
 		
 		return value;
 	}
 	
 	public int update(BoardDto boardDto) {
-		Connection conn = null;
-		PreparedStatement pstmt = null;
-		
+	
 		int value = 0;
+		
 		try {
-			
-			conn = ConnectionProvider.getConnection();			
-			
-			String sqlUpdate = "update board set subject = ?, content = ? where board_number = ?";
-			pstmt = conn.prepareStatement(sqlUpdate);
-			pstmt.setString(1, boardDto.getSubject());
-			pstmt.setString(2, boardDto.getContent());
-			pstmt.setInt(3, boardDto.getBoardNumber());
-			value = pstmt.executeUpdate();
+			session = sqlSessionFactory.openSession();
+			value = session.delete("board_up", boardDto);			
+			session.commit();			
 			
 		}catch(Exception e) {
-			
+			e.printStackTrace();
 		}finally {
-			JdbcUtil.close(pstmt);
-			JdbcUtil.close(conn);
-		}
-		
+			session.close();
+		}		
 		
 		return value;		
 	}	

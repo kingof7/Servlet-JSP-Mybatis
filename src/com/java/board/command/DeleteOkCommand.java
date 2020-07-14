@@ -4,6 +4,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.java.board.model.BoardDao;
+import com.java.board.model.BoardDto;
 import com.java.command.Command;
 
 public class DeleteOkCommand implements Command{
@@ -15,8 +16,12 @@ public class DeleteOkCommand implements Command{
 		String password = request.getParameter("password");
 		
 		logger.info(logMsg + boardNumber + "," + pageNumber + "," + password);
+		BoardDto boardDto = new BoardDto();
 		
-		int check = BoardDao.getInstance().delete(boardNumber, password);
+		boardDto.setBoardNumber(boardNumber);
+		boardDto.setPassword(password);
+		
+		int check = BoardDao.getInstance().delete(boardDto);
 		logger.info(logMsg + check);
 		
 		request.setAttribute("check", check);
