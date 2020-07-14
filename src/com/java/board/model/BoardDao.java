@@ -3,9 +3,10 @@ package com.java.board.model;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
 
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -92,140 +93,67 @@ public class BoardDao {
 		
 	}
 	
+	
 	public int getCount() {
-		String sql = null;
-		Connection conn = null;
-		PreparedStatement pstmt = null;
-		ResultSet rs = null;		
+			
 		int value = 0;
 		
 		try {
-			sql = "select count(*) from board";
 			
-			conn = ConnectionProvider.getConnection();
-			pstmt = conn.prepareStatement(sql);
-			rs = pstmt.executeQuery();
-			
-			if(rs.next()) value = rs.getInt(1); // count(*)
-			
+			session = sqlSessionFactory.openSession();
+			value = session.selectOne("board_count");
+			session.commit();
 			
 		}catch(Exception e) {
 			e.printStackTrace();
 		}finally {
-			JdbcUtil.close(rs);
-			JdbcUtil.close(pstmt);
-			JdbcUtil.close(conn);
+			session.close();
 		}
 		
 		
 		return value;
 	}
-	
-	public ArrayList<BoardDto> getBoardList(int startRow, int endRow) {
-				
-		ArrayList<BoardDto> boardList = new ArrayList<BoardDto>();
-		Connection conn = null;
-		PreparedStatement pstmt = null;
-		ResultSet rs = null;
+	//리스트 뿌려주기
+	public List<BoardDto> getBoardList(int startRow, int endRow) {
+		
+		HashMap<String, Integer> hMap = new HashMap<String, Integer>();
+		hMap.put("startRow", startRow);
+		hMap.put("endRow", endRow);
+		
+		List<BoardDto> boardList = new ArrayList<BoardDto>();		
 		
 		try {
-			String sql = "select * from "
-					+ "(select rownum as rnum, a.* from (select * from board order by group_number desc, sequence_number asc) a) b "
-					+ "where b.rnum >= ? and b.rnum <= ?";
-			conn = ConnectionProvider.getConnection();
-			pstmt = conn.prepareStatement(sql);
-			pstmt.setInt(1, startRow);
-			pstmt.setInt(2, endRow);
-			rs = pstmt.executeQuery();
 			
-			while(rs.next()) {
-				
-				BoardDto boardDto = new BoardDto();
-				
-				boardDto.setBoardNumber(rs.getInt("board_number"));
-				boardDto.setWriter(rs.getString("writer"));
-				boardDto.setSubject(rs.getString("subject"));
-				boardDto.setEmail(rs.getString("email"));
-				boardDto.setContent(rs.getString("content"));
-				
-				boardDto.setPassword(rs.getString("password"));
-				boardDto.setWriteDate(new Date(rs.getTimestamp("write_date").getTime())); //DB에 sysdate(timestamp) --> 자바의 Date로 바꾸기
-				boardDto.setReadCount(rs.getInt("read_count"));
-				boardDto.setGroupNumber(rs.getInt("group_number"));
-				boardDto.setSequenceNumber(rs.getInt("sequence_number"));
-				boardDto.setSequenceLevel(rs.getInt("sequence_level"));
-				
-				System.out.println(boardDto);
-				
-				boardList.add(boardDto);
-			}
-			
+			session = sqlSessionFactory.openSession();
+			boardList = session.selectList("board_list", hMap);
 			
 		}catch(Exception e) {
 			e.printStackTrace();
 		}finally {
-			JdbcUtil.close(rs);
-			JdbcUtil.close(pstmt);
-			JdbcUtil.close(conn);
+			session.close();
 		}
 		
 		return boardList;
 	}
 	
 	public BoardDto read(int boardNumber) {
-		Connection conn = null;
-		PreparedStatement pstmt = null;
-		ResultSet rs = null;
+		
 		BoardDto boardDto = null;
 		
 		try {
 			
-			//조회수 올리는 쿼리
-			conn = ConnectionProvider.getConnection();
-			
-			//오토커밋 취소
-			conn.setAutoCommit(false);
-			
-			String sql = "update board set read_count = read_count + 1 where board_number = ?";
-			pstmt = conn.prepareStatement(sql);
-			pstmt.setInt(1, boardNumber);
-			int value = pstmt.executeUpdate();
-			if(value > 0) JdbcUtil.close(pstmt);
-			
-			
-			String sqlSelect = "select * from board where board_number = ?";
-			pstmt = conn.prepareStatement(sqlSelect);
-			pstmt.setInt(1, boardNumber);
-			rs = pstmt.executeQuery();
-					
-			if(rs.next()) {				
-				boardDto = new BoardDto();
-				
-				boardDto.setBoardNumber(rs.getInt("board_number"));
-				boardDto.setWriter(rs.getString("writer"));
-				boardDto.setSubject(rs.getString("subject"));
-				boardDto.setEmail(rs.getString("email"));
-				boardDto.setContent(rs.getString("content"));
-				
-				boardDto.setPassword(rs.getString("password"));
-				boardDto.setWriteDate(new Date(rs.getTimestamp("write_date").getTime())); //DB에 sysdate(timestamp) --> 자바의 Date로 바꾸기
-				boardDto.setReadCount(rs.getInt("read_count"));
-				boardDto.setGroupNumber(rs.getInt("group_number"));
-				boardDto.setSequenceNumber(rs.getInt("sequence_number"));
-				boardDto.setSequenceLevel(rs.getInt("sequence_level"));
-			}
-			
-			conn.commit();
+			session=sqlSessionFactory.openSession();
+			session.update("board_update", boardNumber);
+			boardDto = session.selectOne("board_read", boardNumber);
+			session.commit();
 			
 		}catch(Exception e) {
-			
+			e.printStackTrace();
+			session.rollback();
 		}finally {
-			JdbcUtil.close(rs);
-			JdbcUtil.close(pstmt);
-			JdbcUtil.close(conn);
+			session.close();
 		}
-		
-		
+				
 		return boardDto;		
 	}
 	

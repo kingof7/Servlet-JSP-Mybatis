@@ -1,6 +1,6 @@
 package com.java.board.command;
 
-import java.util.ArrayList;
+import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -28,7 +28,7 @@ public class ListCommand implements Command {
 		int count = BoardDao.getInstance().getCount(); // 게시글 갯수
 		logger.info(logMsg + count);
 		
-		ArrayList<BoardDto> boardList = null;
+		List<BoardDto> boardList = null;
 		if(count > 0) {
 			// startRow, endRow
 			boardList = BoardDao.getInstance().getBoardList(startRow, endRow);
