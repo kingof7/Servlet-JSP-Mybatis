@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 쿼리문 짜는 곳 -->
+<!-- mybatis api의 Handling Enums에서 가져온 코드 -->
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+    
+    <mapper namespace="com.java.sawon.model.mapper.SawonMapper">
+    	<select id="sawonList" parameterType="String" resultType="com.java.sawon.model.SawonDto">
+    		<![CDATA[
+		    	select
+				    e.employee_id,
+				    e.first_name,
+				    e.hire_date,
+				    e.job_id,
+				    e.department_id,
+				    d.department_name
+				    
+				from employees e, departments d
+				where e.department_id = d.department_id
+				and d.department_name = #{departmentName}
+			]]> 
+		</select>
+    </mapper>

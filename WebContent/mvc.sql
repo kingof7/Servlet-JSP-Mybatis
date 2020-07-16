@@ -33,3 +33,17 @@ create table zipcode(
 alter table board add file_name varchar2(200);
 alter table board add path varchar2(100);
 alter table board add file_size number(10);
+
+
+<hr계정>
+select
+    e.employee_id,
+    e.first_name,
+    e.hire_date,
+    e.job_id,
+    e.department_id,
+    d.department_name
+    
+from employees e, departments d
+where e.department_id = d.department_id
+and d.department_name='IT';
