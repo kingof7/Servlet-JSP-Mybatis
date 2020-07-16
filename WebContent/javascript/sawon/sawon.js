@@ -25,11 +25,17 @@ function toServer(root){
 		xhr.open("POST", url, true);
 		xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
 		xhr.send("departmentName=" + departmentName);
-		//xhr.onreadystatechange=resultProcess;
-		
+		xhr.onreadystatechange=resultProcess;		
 	}
 	
 	function resultProcess(){
+		if(xhr.readyState==4 && xhr.status==200){
+			arr.push(xhr.responseText);
+			
+			var resultDisp=document.getElementById("resultDisp");
+			resultDisp.innerHTML=xhr.responseText;		
+		}
 		
+		alert(arr.join("\n"));
 	}
 }

@@ -9,7 +9,7 @@
       <dataSource type="UNPOOLED">
         <property name="driver" value="oracle.jdbc.driver.OracleDriver"/>
         <property name="url" value="jdbc:oracle:thin:@localhost:1521:xe"/>
-        <property name="username" value="hr"/>
+        <property name="username" value="mvc"/>
         <property name="password" value="1234"/>
       </dataSource>
     </environment>
@@ -19,5 +19,6 @@
     <mapper resource="com/java/board/model/mapper/BoardMapper.xml"/>
     <mapper resource="com/java/fileBoard/model/mapper/BoardMapper.xml"/>
     <mapper resource="com/java/sawon/model/mapper/SawonMapper.xml"/>
+    <mapper resource="com/java/reply/model/mapper/ReplyMapper.xml"/>    
   </mappers>
 </configuration>

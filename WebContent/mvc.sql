@@ -47,3 +47,12 @@ select
 from employees e, departments d
 where e.department_id = d.department_id
 and d.department_name='IT';
+
+<실시간 댓글기능 게시판>
+create table linereply(
+    bunho number(8),
+    line_reply varchar2(500),
+    primary key (bunho)
+);
+
+create sequence linereply_bunho_seq;

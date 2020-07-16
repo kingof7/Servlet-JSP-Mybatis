@@ -13,5 +13,10 @@
 	<h3>사원 테이블</h3>
 	<a href="${root}/sawon/list.do">사원목록</a>
 	<br/><br/>
+	
+	<h3>실시간 댓글</h3>
+	<a href="${root}/reply/replyList.do">한줄답글시작</a>
+	<br/><br/>
+	
 </body>
 </html>

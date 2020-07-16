@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+<script type="text/javascript" src="xhr.js"></script>
+<script type="text/javascript">
+	function toServer(){
+		var msg=document.getElementById("createForm").msg.value;
+		var params='msg='+msg;
+		var url="command.jsp"; //주소 변경
+		
+		sendRequest("POST", url, params, fromServer); // xhr.js에서불러옴
+	}
+	
+	function fromServer(){
+		if(xhr.readyState==4 && xhr.status==200){
+			arr.push(xhr.responseText);
+			alert(arr.join("\n"));
+						
+			var disp=document.getElementById("disp");
+		}
+		
+	}
+</script>
+</head>
+<body>
+	<form id="createForm">
+		<input type="text" name="msg"/>
+		<input type="button" value="입력" onclick="toServer()"/>		
+	</form>
+	<br/><br/>
+	
+	<div id="disp"></div>
+</body>
+</html>

@@ -18,5 +18,6 @@
 			<option value="Sales">Sales</option>
 		</select>
 	</form>
+	<div id="resultDisp"></div>
 </body>
 </html>

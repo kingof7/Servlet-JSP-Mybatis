@@ -20,7 +20,10 @@ public class ListOkCommand implements Command {
 		List<SawonDto> sawonList = SawonDao.getInstance().select(departmentName);
 		logger.info(logMsg + sawonList.size());
 		
-		return null;
+		//List -> JSONArray (JSONLib.jar, JSON형태 코딩구현) --> JSP page 출력시 태그를 만듬
+		request.setAttribute("sawonList", sawonList);
+				
+		return "/WEB-INF/views/ajax/sawon/listOk.jsp";
 	}
 
 }
